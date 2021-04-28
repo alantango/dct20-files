@@ -1,0 +1,182 @@
+---
+  AWSTemplateFormatVersion: 2010-09-09
+
+  Description: VPC Infrastructure setup and deployment of Cloud9 IDE for Serverless Auth Workshop
+
+  Parameters:
+  
+    ResourceName:
+      Type: String
+      Default: at-wildrydes-wksp
+      AllowedValues:
+        - at-wildrydes-wksp
+      Description: Prefix of Resources created for this workshop.
+
+  Resources:
+
+    # Create the Cloud9 Instance in a specified Subnet
+    Cloud9Instance:
+      Type: "AWS::Cloud9::EnvironmentEC2"
+      Properties:
+        Description: "Cloud9 IDE for the AWS Serverless Authentication and Authorization Workshop"
+        AutomaticStopTimeMinutes: 120
+        InstanceType: t2.micro
+        Name: !Join [ '-', [ !Ref ResourceName, 'ide'  ] ]
+        SubnetId: "subnet-a5ba49ce"
+    
+    # Create Pre Sign-Up Lambda Trigger Role
+    LambdaPreSignUpRole: 
+      Type: AWS::IAM::Role
+      Properties: 
+        RoleName: !Join [ '-', [ !Ref ResourceName, 'lambda', 'pre-sign-up'  ] ]
+        AssumeRolePolicyDocument: 
+          Version: 2012-10-17
+          Statement: 
+            - 
+              Effect: Allow
+              Principal: 
+                Service: 
+                  - lambda.amazonaws.com
+              Action: 
+                - sts:AssumeRole
+        Path: /
+        Policies: 
+          - 
+            PolicyName: PreSignUpPolicy
+            PolicyDocument: 
+              Version: 2012-10-17
+              Statement: 
+                - 
+                  Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: '*'
+      
+    # Create Pre Sign-Up Lambda Trigger
+    LambdaPreSignUp: 
+      Type: "AWS::Lambda::Function"
+      Properties: 
+        FunctionName: 
+          Fn::Join:
+          - '-'
+          - [!Ref ResourceName, 'pre-sign-up']
+        Handler: "index.lambda_handler"
+        Environment:
+          Variables:
+            PREFIX: !Ref ResourceName
+        Role: 
+          Fn::GetAtt: 
+            - "LambdaPreSignUpRole"
+            - "Arn"
+        Code: 
+          ZipFile: |
+            # PASTE CODE HERE
+        Runtime: "python3.7"
+        Timeout: "35"
+
+    # Create Custom Message Lambda Trigger Role
+    LambdaCustomMessageRole: 
+      Type: AWS::IAM::Role
+      Properties: 
+        RoleName: !Join [ '-', [ !Ref ResourceName, 'lambda', 'custom-message'  ] ]
+        AssumeRolePolicyDocument: 
+          Version: 2012-10-17
+          Statement: 
+            - 
+              Effect: Allow
+              Principal: 
+                Service: 
+                  - lambda.amazonaws.com
+              Action: 
+                - sts:AssumeRole
+        Path: /
+        Policies: 
+          - 
+            PolicyName: CustomMessagePolicy
+            PolicyDocument: 
+              Version: 2012-10-17
+              Statement: 
+                - 
+                  Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: '*'
+      
+    # Create Custom Message Lambda Trigger
+    LambdaCustomMessage: 
+      Type: "AWS::Lambda::Function"
+      Properties: 
+        FunctionName: 
+          Fn::Join:
+          - '-'
+          - [!Ref ResourceName, 'custom-message']
+        Handler: "index.lambda_handler"
+        Environment:
+          Variables:
+            PREFIX: !Ref ResourceName
+        Role: 
+          Fn::GetAtt: 
+            - "LambdaCustomMessageRole"
+            - "Arn"
+        Code: 
+          ZipFile: |
+            # PASTE CODE HERE
+        Runtime: "python3.7"
+        Timeout: "35"
+    
+    # Create Pre Token Generation Lambda Trigger Role
+    LambdaPreTokenRole: 
+      Type: AWS::IAM::Role
+      Properties: 
+        RoleName: !Join [ '-', [ !Ref ResourceName, 'lambda', 'pre-token-gen'  ] ]
+        AssumeRolePolicyDocument: 
+          Version: 2012-10-17
+          Statement: 
+            - 
+              Effect: Allow
+              Principal: 
+                Service: 
+                  - lambda.amazonaws.com
+              Action: 
+                - sts:AssumeRole
+        Path: /
+        Policies: 
+          - 
+            PolicyName: PreTokenPolicy
+            PolicyDocument: 
+              Version: 2012-10-17
+              Statement: 
+                - 
+                  Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: '*'
+      
+    # Create Pre Token Generation Lambda Trigger
+    LambdaPreToken: 
+      Type: "AWS::Lambda::Function"
+      Properties: 
+        FunctionName: 
+          Fn::Join:
+          - '-'
+          - [!Ref ResourceName, 'pre-token-gen']
+        Handler: "index.lambda_handler"
+        Environment:
+          Variables:
+            PREFIX: !Ref ResourceName
+        Role: 
+          Fn::GetAtt: 
+            - "LambdaPreTokenRole"
+            - "Arn"
+        Code: 
+          ZipFile: |
+            # PASTE CODE HERE
+        Runtime: "python3.7"
+        Timeout: "35"
+
